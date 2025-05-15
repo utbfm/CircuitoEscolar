@@ -35,13 +35,38 @@
         .leaflet-control-attribution {
             display: none !important;
         }
+        #circuito-escolar {
+            position: absolute;
+            top: 64px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: #FE8304;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #footer {
+            background-color: #FE8304;
+            padding: 20px;
+            color: white;
+            font-weight: bold;
+            text-align: right;
+        }
     </style>
 
     <!-- Script Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
+    <!-- Ajout de l'en-tête ici -->
+    <h1 style="text-align: center; background-color: #FE8304; color: black; padding: 10px; margin: 0;">SUPERVISIÓN DEL CIRCUITO ESCOLAR</h1>
+
+    <div id="circuito-escolar">Recorrido del 15/05/2025</div>
     <div id="map"></div>
+    <div id="footer">© 2025 UTBFM Juárez N.L.</div>
 
     <script>
         // Initialiser la carte avec une position par défaut
