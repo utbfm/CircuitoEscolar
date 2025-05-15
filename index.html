@@ -11,10 +11,15 @@
         html, body {
             height: 100%;
             margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
         }
         #map {
-            height: 100%;
+            flex-grow: 1;
             width: 100%;
+            min-height: 300px;
         }
         .school-label {
             color: black;
@@ -48,12 +53,30 @@
             font-size: 20px;
             font-weight: bold;
         }
+        #header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #FE8304;
+            color: black;
+            padding: 10px;
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+            z-index: 1000;
+        }
         #footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background-color: #FE8304;
             padding: 20px;
             color: white;
             font-weight: bold;
             text-align: right;
+            z-index: 1000;
         }
     </style>
 
@@ -62,7 +85,7 @@
 </head>
 <body>
     <!-- Ajout de l'en-tête ici -->
-    <h1 style="text-align: center; background-color: #FE8304; color: black; padding: 10px; margin: 0;">SUPERVISIÓN DEL CIRCUITO ESCOLAR</h1>
+    <div id="header">SUPERVISIÓN DEL CIRCUITO ESCOLAR</div>
 
     <div id="circuito-escolar">Recorrido del 15/05/2025</div>
     <div id="map"></div>
