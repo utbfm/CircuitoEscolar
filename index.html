@@ -1,40 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Carte GPS en temps réel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte OpenStreetMap avec point GPS dynamique</title>
+    <!-- Inclure la bibliothèque Leaflet pour la carte -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        #map { height: 600px; width: 100%; }
+        #map {
+            height: 600px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script>
-        // Initialiser la carte avec des coordonnées par défaut
-        var map = L.map('map').setView([25.638750679464923, -100.04766973249461], 13);
+        // Initialiser la carte OpenStreetMap
+        var map = L.map('map').setView([48.8566, 2.3522], 13); // Coordonnées initiales (ex. Paris)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Ajouter un marqueur
-        var marker = L.marker([25.638750679464923, -100.04766973249461]).addTo(map);
+        // Variable pour stocker le marqueur
+        var marker = null;
 
-        // Fonction pour mettre à jour les coordonnées
-        function updateMarker() {
-            fetch('https://script.google.com/macros/s/AKfycbwp870aLTvXz_xp5ThVhrHOksoUAPJfrlfuehujze1bOy3NR6WloGNURsyWQ7Z7ZFdY/exec') // Remplacez par l'URL de votre serveur
-                .then(response => response.json())
-                .then(data => {
-                    marker.setLatLng([data.latitude, data.longitude]);
-                    map.setView([data.latitude, data.longitude], 13);
-                    console.log('Coordonnées mises à jour:', data);
-                })
-                .catch(error => console.error('Erreur:', error));
+        // Fonction pour récupérer les données GPS depuis Google Sheets
+        async function fetchGPSData() {
+            try {
+                // URL du CSV de la Google Sheet
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=csv';
+                const response = await fetch(sheetUrl);
+                if (!response.ok) throw new Error('Erreur réseau ou CSV inaccessible');
+                const text = await response.text();
+
+                // Parser le CSV (ignorer l'en-tête, prendre la dernière ligne)
+                const lines = text.trim().split('\n');
+                if (lines.length < 2) throw new Error('Aucune donnée dans le CSV');
+                const lastLine = lines[lines.length - 1];
+                const [latitude, longitude] = lastLine.split(',').map(parseFloat);
+
+                if (!isNaN(latitude) && !isNaN(longitude)) {
+                    updateMarker(latitude, longitude);
+                } else {
+                    console.warn('Coordonnées invalides:', lastLine);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données:', error);
+            }
         }
 
-        // Appeler immédiatement et toutes les 10 secondes
-        updateMarker();
-        setInterval(updateMarker, 10000);
+        // Fonction pour mettre à jour la position du marqueur
+        function updateMarker(latitude, longitude) {
+            const newLatLng = [latitude, longitude];
+            if (marker) {
+                // Déplacer le marqueur existant
+                marker.setLatLng(newLatLng);
+                map.panTo(newLatLng); // Recentrer la carte sur le marqueur
+            } else {
+                // Créer un nouveau marqueur
+                marker = L.marker(newLatLng).addTo(map);
+                map.setView(newLatLng, 13);
+            }
+        }
+
+        // Récupérer les données initiales
+        fetchGPSData();
+
+        // Mettre à jour toutes les 10 secondes
+        setInterval(fetchGPSData, 10000);
     </script>
 </body>
 </html>
