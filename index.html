@@ -55,6 +55,7 @@
                 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=csv';
                 const response = await fetch(sheetUrl);
                 if (!response.ok) throw new Error('Erreur de chargement des données CSV');
+            
 
                 const text = await response.text();
                 const lines = text.trim().split('\n');
