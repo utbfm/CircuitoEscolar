@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carte OpenStreetMap avec point GPS dynamique (CSV)</title>
+    <title>Carte OpenStreetMap avec point GPS dynamique (CSV corrigé)</title>
 
     <!-- Feuille de style Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -41,11 +41,10 @@
             const coords = [lat, lon];
             if (marker) {
                 marker.setLatLng(coords);
-                map.panTo(coords);
             } else {
                 marker = L.marker(coords).addTo(map);
-                map.panTo(coords);
             }
+            map.panTo(coords);
         }
 
         // Fonction pour récupérer les données GPS depuis un fichier CSV
@@ -56,13 +55,19 @@
                 if (!response.ok) throw new Error('Erreur de chargement des données CSV');
 
                 const text = await response.text();
+                console.log('CSV reçu:', text);
+
                 const lines = text.trim().split('\n');
                 if (lines.length < 2) throw new Error('Aucune donnée disponible');
 
-                const lastLine = lines[lines.length - 1];
-                const [latStr, lonStr] = lastLine.split(','); // <-- CSV : virgule
+                // Ignorer la ligne d'en-tête
+                const dataLines = lines.slice(1);
+                const lastLine = dataLines[dataLines.length - 1];
+                const [latStr, lonStr] = lastLine.split(',');
                 const lat = parseFloat(latStr);
                 const lon = parseFloat(lonStr);
+
+                console.log('Dernières coordonnées:', lat, lon);
 
                 if (!isNaN(lat) && !isNaN(lon)) {
                     updateMarker(lat, lon);
