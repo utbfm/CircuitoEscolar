@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carte OpenStreetMap avec point GPS dynamique</title>
+    <title>Carte OpenStreetMap avec point GPS dynamique (TSV)</title>
 
     <!-- Feuille de style Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Assure que la carte est bien visible */
         html, body {
             height: 100%;
             margin: 0;
@@ -42,27 +41,26 @@
             const coords = [lat, lon];
             if (marker) {
                 marker.setLatLng(coords);
-                map.panTo(coords); // déplacement fluide
+                map.panTo(coords);
             } else {
                 marker = L.marker(coords).addTo(map);
-                map.panTo(coords); // centrage initial
+                map.panTo(coords);
             }
         }
 
-        // Fonction pour récupérer les données GPS depuis Google Sheets
+        // Fonction pour récupérer les données GPS depuis un fichier TSV
         async function fetchGPSData() {
             try {
-                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=csv';
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=tsv';
                 const response = await fetch(sheetUrl);
-                if (!response.ok) throw new Error('Erreur de chargement des données CSV');
-            
+                if (!response.ok) throw new Error('Erreur de chargement des données TSV');
 
                 const text = await response.text();
                 const lines = text.trim().split('\n');
                 if (lines.length < 2) throw new Error('Aucune donnée disponible');
 
                 const lastLine = lines[lines.length - 1];
-                const [latStr, lonStr] = lastLine.split(',');
+                const [latStr, lonStr] = lastLine.split('\t'); // <-- changement ici
                 const lat = parseFloat(latStr);
                 const lon = parseFloat(lonStr);
 
@@ -76,7 +74,7 @@
             }
         }
 
-        // Mise à jour initiale + intervalle toutes les 10 secondes
+        // Mise à jour initiale + toutes les 10 secondes
         fetchGPSData();
         setInterval(fetchGPSData, 10000);
     </script>
