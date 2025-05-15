@@ -4,76 +4,80 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Carte OpenStreetMap avec point GPS dynamique</title>
+
     <!-- Feuille de style Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Script Leaflet avec "defer" -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <style>
+        /* Assure que la carte est bien visible */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
         #map {
-            height: 600px;
+            height: 100%;
             width: 100%;
         }
     </style>
+
+    <!-- Script Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div id="map"></div>
 
-    <!-- Script JavaScript optimisé -->
-    <script defer>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Initialiser la carte avec vue par défaut
-            const map = L.map("map").setView([25.638682972120648, -100.04763754830324], 13);
-            
-            // Ajouter une couche de tuiles (rapide)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
+    <script>
+        // Initialiser la carte avec une position par défaut
+        var map = L.map('map').setView([25.638682972120648, -100.04763754830324], 13);
 
-            let marker = null;
+        // Ajouter les tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-            // Fonction pour récupérer les coordonnées GPS
-            async function fetchGPSData() {
-                try {
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=csv';
-                    const response = await fetch(sheetUrl);
-                    if (!response.ok) throw new Error('Erreur réseau ou accès CSV');
-                    const text = await response.text();
+        // Marqueur (initialement nul)
+        var marker = null;
 
-                    const lines = text.trim().split('\n');
-                    if (lines.length < 2) throw new Error('Pas de données');
-                    const lastLine = lines[lines.length - 1];
-                    const [latitude, longitude] = lastLine.split(',').map(parseFloat);
-
-                    if (!isNaN(latitude) && !isNaN(longitude)) {
-                        updateMarker(latitude, longitude);
-                    } else {
-                        console.warn("Coordonnées invalides :", lastLine);
-                    }
-                } catch (e) {
-                    console.error("Erreur de récupération :", e);
-                }
+        // Mettre à jour ou créer le marqueur
+        function updateMarker(lat, lon) {
+            const coords = [lat, lon];
+            if (marker) {
+                marker.setLatLng(coords);
+                map.panTo(coords); // déplacement fluide
+            } else {
+                marker = L.marker(coords).addTo(map);
+                map.panTo(coords); // centrage initial
             }
+        }
 
-            // Fonction pour mettre à jour ou créer le marqueur
-            function updateMarker(lat, lon) {
-                const coords = [lat, lon];
-                if (marker) {
-                    marker.setLatLng(coords);
-                    // map.panTo(coords); // facultatif, on évite les secousses
+        // Fonction pour récupérer les données GPS depuis Google Sheets
+        async function fetchGPSData() {
+            try {
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0RXmV78MC7oVqF_H_DewNQtbLdks1_vpmiqGG7Xc_QLFvVu4o6SqdC1yCW2GCptGfXObDaztzW7L6/pub?gid=0&single=true&output=csv';
+                const response = await fetch(sheetUrl);
+                if (!response.ok) throw new Error('Erreur de chargement des données CSV');
+
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                if (lines.length < 2) throw new Error('Aucune donnée disponible');
+
+                const lastLine = lines[lines.length - 1];
+                const [latStr, lonStr] = lastLine.split(',');
+                const lat = parseFloat(latStr);
+                const lon = parseFloat(lonStr);
+
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    updateMarker(lat, lon);
                 } else {
-                    marker = L.marker(coords).addTo(map);
-                    map.setView(coords, 13); // zoom et recentrage initial
+                    console.warn('Coordonnées GPS invalides :', lastLine);
                 }
+            } catch (err) {
+                console.error('Erreur lors de la récupération des coordonnées GPS :', err);
             }
+        }
 
-            // Attendre que la carte soit prête avant de démarrer les mises à jour
-            map.whenReady(() => {
-                fetchGPSData();
-                setInterval(fetchGPSData, 10000); // toutes les 10s
-            });
-        });
+        // Mise à jour initiale + intervalle toutes les 10 secondes
+        fetchGPSData();
+        setInterval(fetchGPSData, 10000);
     </script>
 </body>
 </html>
