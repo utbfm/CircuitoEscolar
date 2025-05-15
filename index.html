@@ -1,31 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte GPS</title>
-    <!-- Inclure la bibliothèque Leaflet -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carte OpenStreetMap avec point GPS dynamique (CSV corrigé)</title>
+
+    <!-- Feuille de style Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        #map { height: 600px; } /* Hauteur de la carte */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .school-label {
+            color: black;
+            text-shadow: 0 0 3px white, 0 0 5px white;
+            padding: 2px 6px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            position: absolute;
+            transform: translate(10px, -25px);
+        }
+        .custom-div-icon {
+            display: flex;
+            align-items: flex-start;
+        }
     </style>
+
+    <!-- Script Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <!-- Conteneur pour la carte -->
     <div id="map"></div>
 
     <script>
-        // Initialisation de la carte Leaflet
-        const map = L.map('map').setView([0, 0], 13); // Coordonnées initiales (0,0), zoom 13
+        // Initialiser la carte avec une position par défaut
+        var map = L.map('map').setView([25.638682972120648, -100.04763754830324], 13);
 
-        // Ajout de la couche de tuiles OpenStreetMap sans attribution
+        // Ajouter les tuiles OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '' // Supprime l'attribution (vérifiez la conformité légale)
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Variable globale pour le marqueur
-        let marker = null;
+        // Marqueur (initialement nul)
+        var marker = null;
 
         // Mettre à jour ou créer le marqueur
         function updateMarker(lat, lon) {
@@ -73,6 +97,52 @@
         // Mise à jour initiale + toutes les 10 secondes
         fetchGPSData();
         setInterval(fetchGPSData, 10000);
+
+        // Ajouter des marqueurs avec étiquettes permanentes pour chaque établissement
+        var customMarker1 = L.marker([25.648591068705205, -100.0856852033863], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" style="width:25px; height:41px;"><div class="school-label">CECYTE</div></div>',
+                iconSize: [50, 41],
+                iconAnchor: [12, 41]
+            })
+        }).addTo(map);
+
+        var customMarker2 = L.marker([25.63792851629281, -100.04780921128857], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" style="width:25px; height:41px;"><div class="school-label">UTBFM</div></div>',
+                iconSize: [50, 41],
+                iconAnchor: [12, 41]
+            })
+        }).addTo(map);
+
+        var customMarker3 = L.marker([25.64946065968687, -100.0733161251606], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" style="width:25px; height:41px;"><div class="school-label">CONALEP</div></div>',
+                iconSize: [50, 41],
+                iconAnchor: [12, 41]
+            })
+        }).addTo(map);
+
+        var customMarker4 = L.marker([25.64517418001307, -100.08823920605757], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" style="width:25px; height:41px;"><div class="school-label">Preparatoria 22 UANL</div></div>',
+                iconSize: [100, 41],
+                iconAnchor: [12, 41]
+            })
+        }).addTo(map);
+
+        var customMarker5 = L.marker([25.604540659906498, -100.10462623465052], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" style="width:25px; height:41px;"><div class="school-label">UNIDAD ACADEMICA JUAREZ UANL</div></div>',
+                iconSize: [150, 41],
+                iconAnchor: [12, 41]
+            })
+        }).addTo(map);
     </script>
 </body>
 </html>
